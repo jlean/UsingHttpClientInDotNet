@@ -27,7 +27,11 @@ namespace Movies.Client.Services
         }
         public async Task Run()
         {
-            await GetResourceThroughHttpRequestMessage();
+            //await GetResource();
+            //await GetResourceThroughHttpRequestMessage();
+            //await CreateResource();
+            //await UpdateResource();
+            await DeleteResource();
         }
 
         public async Task GetResource()
@@ -66,6 +70,75 @@ namespace Movies.Client.Services
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 });
+        }
+
+        public async Task CreateResource()
+        {
+            var movieToCreate = new MovieForCreation()
+            {
+                Title = "Heat",
+                Description = "Just a good movie about crime",
+                DirectorId = Guid.Parse("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
+                ReleaseDate = new DateTimeOffset(new DateTime(1992, 9, 2)),
+                Genre = "Crime, Drama"
+            };
+
+            var serializedMovieToCreate = JsonSerializer.Serialize(movieToCreate);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "api/movies");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            request.Content = new StringContent(serializedMovieToCreate);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var createdMovie = JsonSerializer.Deserialize<Movie>(content,
+                new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+        }
+
+        public async Task UpdateResource()
+        {
+            var movieToCreate = new MovieForCreation()
+            {
+                Title = "Moana",
+                Description = "Just a good movie about crime",
+                DirectorId = Guid.Parse("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
+                ReleaseDate = new DateTimeOffset(new DateTime(1992, 9, 2)),
+                Genre = "Adventure, Comedy"
+            };
+
+            var serializedMovieToCreate = JsonSerializer.Serialize(movieToCreate);
+
+            var request = new HttpRequestMessage(HttpMethod.Put, "api/movies/5b1c2b4d-48c7-402a-80c3-cc796ad49c6b");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            request.Content = new StringContent(serializedMovieToCreate);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var createdMovie = JsonSerializer.Deserialize<Movie>(content,
+                new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+        }
+
+        public async Task DeleteResource()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Delete, "api/movies/5b1c2b4d-48c7-402a-80c3-cc796ad49c6b");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
         }
     }
 }
