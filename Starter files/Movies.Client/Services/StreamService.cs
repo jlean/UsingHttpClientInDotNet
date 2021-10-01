@@ -23,7 +23,8 @@ namespace Movies.Client.Services
         }
         public async Task Run()
         {
-            await GetPosterWithStream();
+            // await GetPosterWithStream();
+            await GetPosterWithStreamAndCompletionMode();
         }          
 
         private async Task GetPosterWithStream()
@@ -47,6 +48,23 @@ namespace Movies.Client.Services
                     }
 
                 }
+            }
+        }
+
+        private async Task GetPosterWithStreamAndCompletionMode()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get,
+               $"api/movies/d8663e5e-7494-4f81-8739-6e0de1bea7ee/posters/{Guid.NewGuid()}");
+
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var response = await _httpClient.SendAsync(request,
+                HttpCompletionOption.ResponseHeadersRead); // to start working with the response once headers are processed not the whole content
+            using (var stream = await response.Content.ReadAsStreamAsync())
+            {
+                response.EnsureSuccessStatusCode();
+                var poster = stream.ReadAndDeserializeFromJson<Poster>();
+               
             }
         }
     }
